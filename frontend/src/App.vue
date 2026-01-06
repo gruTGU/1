@@ -2,106 +2,119 @@
   <div class="app-container">
     <h1 class="title">树结构可视化系统</h1>
 
+    <!-- 左右两栏布局 -->
     <div class="main-content">
-      <!-- 构建树 -->
-      <el-card class="card">
-        <template #header>
-          <div class="card-header">
-            <span>构建树</span>
-          </div>
-        </template>
-        <div class="card-body">
-          <el-input
-            v-model="preorderInput"
-            placeholder="请输入前序序列（#表示空），例如：ABD##E##CF###"
-            maxlength="2047"
-            show-word-limit
-            class="input-preorder"
-          />
-          <el-button type="primary" @click="buildTree" class="btn-build">构建树</el-button>
-        </div>
-      </el-card>
-
-      <!-- 树可视化 -->
-      <el-card class="card tree-card" v-if="treeBuilt">
-        <template #header>
-          <div class="card-header">
-            <span>树状图展示</span>
-          </div>
-        </template>
-        <div class="card-body">
-          <div ref="graphRef" class="tree-graph-container"></div>
-        </div>
-      </el-card>
-
-      <!-- 树信息 -->
-      <el-card class="card info-card" v-if="treeBuilt">
-        <template #header>
-          <div class="card-header">
-            <span>树信息</span>
-          </div>
-        </template>
-        <div class="card-body">
-          <div class="info-item">
-            <span class="label">树高：</span>
-            <span class="value">{{ treeHeight }}</span>
-          </div>
-          <div class="info-item">
-            <span class="label">后序遍历：</span>
-            <span class="value">{{ postorderResult }}</span>
-          </div>
-        </div>
-      </el-card>
-
-      <!-- 路径查询 -->
-      <el-card class="card compact-card" v-if="treeBuilt">
-        <template #header>
-          <div class="card-header">
-            <span>路径查询</span>
-          </div>
-        </template>
-        <div class="card-body">
-          <div class="query-section">
+      <!-- 左侧：构建树 + 树状图 -->
+      <div class="left-panel">
+        <!-- 构建树 -->
+        <el-card class="card build-tree-card">
+          <template #header>
+            <div class="card-header">
+              <span>构建树</span>
+            </div>
+          </template>
+          <div class="card-body">
             <el-input
-              v-model="pathTarget"
-              placeholder="输入目标节点字符"
-              maxlength="1"
+              v-model="preorderInput"
+              placeholder="请输入前序序列（#表示空），例如：ABD##E##CF###"
+              maxlength="2047"
               show-word-limit
-              class="input-target"
+              class="input-preorder"
             />
-            <el-button type="primary" @click="queryPath" class="btn-query">查询路径</el-button>
+            <el-button type="primary" @click="buildTree" class="btn-build">构建树</el-button>
           </div>
-          <div v-if="pathResult" class="result-section">
-            <span class="label">路径：</span>
-            <span class="value path-value">{{ pathResult }}</span>
-          </div>
-        </div>
-      </el-card>
+        </el-card>
 
-      <!-- 节点高度查询 -->
-      <el-card class="card compact-card" v-if="treeBuilt">
-        <template #header>
-          <div class="card-header">
-            <span>节点高度查询</span>
+        <!-- 树可视化 -->
+        <el-card class="card tree-card" v-if="treeBuilt">
+          <template #header>
+            <div class="card-header">
+              <span>树状图展示</span>
+            </div>
+          </template>
+          <div class="card-body">
+            <div ref="graphRef" class="tree-graph-container"></div>
           </div>
-        </template>
-        <div class="card-body">
-          <div class="query-section">
-            <el-input
-              v-model="levelTarget"
-              placeholder="输入目标节点字符"
-              maxlength="1"
-              show-word-limit
-              class="input-target"
-            />
-            <el-button type="primary" @click="queryNodeLevel" class="btn-query">查询高度</el-button>
+        </el-card>
+      </div>
+
+      <!-- 右侧：功能区 -->
+      <div class="right-panel">
+        <!-- 树信息 -->
+        <el-card class="card">
+          <template #header>
+            <div class="card-header">
+              <span>树信息</span>
+            </div>
+          </template>
+          <div class="card-body">
+            <div class="info-section">
+              <div class="info-item">
+                <span class="label">树高：</span>
+                <span class="value">{{ treeHeight }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">后序遍历：</span>
+                <span class="value">{{ postorderResult }}</span>
+              </div>
+            </div>
           </div>
-          <div v-if="levelResult" class="result-section">
-            <span class="label">节点高度：</span>
-            <span class="value">{{ levelResult }}</span>
+        </el-card>
+
+        <!-- 路径查询 -->
+        <el-card class="card">
+          <template #header>
+            <div class="card-header">
+              <span>路径查询</span>
+            </div>
+          </template>
+          <div class="card-body">
+            <div class="query-section">
+              <div class="query-controls">
+                <el-input
+                  v-model="pathTarget"
+                  placeholder="输入目标节点字符"
+                  maxlength="1"
+                  show-word-limit
+                  class="input-target"
+                />
+                <el-button type="primary" @click="queryPath" class="btn-query">查询路径</el-button>
+              </div>
+              <div v-if="pathResult" class="result-section">
+                <span class="label">路径：</span>
+                <span class="value path-value">{{ pathResult }}</span>
+              </div>
+            </div>
           </div>
-        </div>
-      </el-card>
+        </el-card>
+
+        <!-- 节点高度查询 -->
+        <el-card class="card">
+          <template #header>
+            <div class="card-header">
+              <span>节点高度查询</span>
+            </div>
+          </template>
+          <div class="card-body">
+            <div class="query-section">
+              <div class="query-controls">
+                <el-input
+                  v-model="levelTarget"
+                  placeholder="输入目标节点字符"
+                  maxlength="1"
+                  show-word-limit
+                  class="input-target"
+                />
+                <el-button type="primary" @click="queryNodeLevel" class="btn-query">查询高度</el-button>
+              </div>
+              <div v-if="levelResult" class="result-section">
+                <span class="label">节点高度：</span>
+                <span class="value">{{ levelResult }}</span>
+              </div>
+            </div>
+          </div>
+        </el-card>
+      </div>
     </div>
   </div>
 </template>
@@ -124,6 +137,7 @@ const treeData = ref(null)
 const graphRef = ref(null)
 const highlightPath = ref([])
 const highlightNode = ref(null)
+const activeTab = ref('info')
 
 // 构建树
 const buildTree = async () => {
@@ -315,14 +329,14 @@ const renderTree = () => {
     },
     defaultNode: {
       type: 'circle',
-      size: 52,
+      size: 105,
       label: true,
       labelCfg: {
         position: 'center',
         offsetY: 0,
         style: {
           fill: '#000000',
-          fontSize: 20,
+          fontSize: 36,
           fontWeight: 'bold',
           textAlign: 'center',
           textBaseline: 'middle'
@@ -331,7 +345,7 @@ const renderTree = () => {
       style: {
         fill: '#E3F2FD',
         stroke: '#1976D2',
-        lineWidth: 2,
+        lineWidth: 3,
         cursor: 'pointer'
       }
     },
@@ -346,8 +360,8 @@ const renderTree = () => {
     layout: {
       type: 'dendrogram',
       direction: 'TB',
-      nodeSep: 48,
-      rankSep: 80
+      nodeSep: 80,
+      rankSep: 120
     },
     data: graphData
   })
@@ -423,11 +437,11 @@ const applyStylesToGraphData = (graphData) => {
       const baseStyle = {
         fill: '#E3F2FD',
         stroke: '#1976D2',
-        lineWidth: 2,
+        lineWidth: 3,
         labelText: node.label,
         labelFill: '#1F1F1F',
-        labelFontSize: 18,
-        labelFontWeight: 600,
+        labelFontSize: 36,
+        labelFontWeight: 'bold',
         labelTextAlign: 'center',
         labelTextBaseline: 'middle'
       }
@@ -492,7 +506,7 @@ onMounted(() => {
 
 <style scoped>
 .app-container {
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 20px;
   background: linear-gradient(180deg, #f7f9fc 0%, #eef3f9 100%);
@@ -501,49 +515,90 @@ onMounted(() => {
 
 .title {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 24px;
   color: #333;
   font-size: 28px;
   font-weight: 700;
 }
 
-/* 左侧：输入信息和树状图；右侧：其他功能 */
+/* 左右两栏布局 */
 .main-content {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+  min-height: calc(100vh - 120px);
+}
+
+/* 左侧面板：构建树 + 树状图 */
+.left-panel {
+  display: flex;
+  flex-direction: column;
   gap: 24px;
 }
 
-/* 左侧布局：输入信息 + 树状图 */
-.card:first-child {
-  grid-column: 1;
-  grid-row: 1;
+/* 右侧面板：功能选项卡 */
+.right-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
+/* 左侧面板的卡片 */
+.left-panel .card {
+  margin-bottom: 0;
+}
+
+/* 构建树卡片 */
+.build-tree-card {
+  width: 100%;
+}
+
+/* 左侧树状图卡片 */
 .card.tree-card {
-  grid-column: 1;
-  grid-row: 2;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
-/* 右侧布局：树信息 + 路径查询 + 节点高度查询 */
-.card:nth-child(3) {
-  grid-column: 2;
-  grid-row: 1;
+.tree-card .card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
-.card:nth-child(4) {
-  grid-column: 2;
-  grid-row: 2;
+/* 右侧功能卡片 */
+.right-panel .card {
+  margin-bottom: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
-.card:last-child {
-  grid-column: 2;
-  grid-row: 3;
+.right-panel .card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 功能选项卡 */
+.function-tabs {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.function-tabs .el-tabs__content {
+  flex: 1;
+  padding: 16px 0;
+}
+
+/* 树信息区域 */
+.info-section {
+  padding: 8px 0;
 }
 
 /* 圆角美化的卡片 */
 .card {
-  margin-bottom: 24px;
   border-radius: 12px !important;
   overflow: hidden;
   background: #ffffff;
@@ -551,14 +606,14 @@ onMounted(() => {
   transition: all 0.3s ease;
 }
 
-/* 调整Element Plus卡片的默认内边距，确保高度一致 */
+/* 调整Element Plus卡片的默认内边距 */
 .card .el-card__body {
-  padding: 16px !important;
+  padding: 20px !important;
   margin: 0 !important;
 }
 
 .card:hover {
-  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.12);
+  box-shadow: 0 6px 20px 0 rgba(0, 0, 0, 0.12);
 }
 
 .card-header {
@@ -572,19 +627,23 @@ onMounted(() => {
   background: #f4f7fb;
   border-bottom: 1px solid #e6edf5;
   color: #1f2d3d;
+  font-weight: 600;
 }
 
 .card-body {
   padding: 16px 0;
 }
 
-.info-card .el-card__body,
-.compact-card .el-card__body {
-  min-height: 120px;
+/* 查询部分 */
+.query-section {
+  padding: 8px 0;
 }
 
-.compact-card .card-body {
-  padding: 12px 0;
+/* 查询控件容器 */
+.query-controls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
 /* 圆角输入框 */
@@ -601,9 +660,15 @@ onMounted(() => {
   box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2) !important;
 }
 
+/* 构建树输入框 */
 .input-preorder {
-  width: 70%;
+  width: calc(100% - 120px);
   margin-right: 12px;
+}
+
+/* 查询输入框 */
+.input-target {
+  flex: 1;
 }
 
 /* 圆角按钮 */
@@ -619,12 +684,18 @@ onMounted(() => {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
+/* 构建树按钮 */
 .btn-build {
-  width: 28%;
+  width: 100px;
+}
+
+/* 查询按钮 */
+.btn-query {
+  width: 120px;
 }
 
 .info-item {
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
 .label {
@@ -639,22 +710,11 @@ onMounted(() => {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.query-section {
-  display: flex;
-  margin-bottom: 12px;
-}
-
-.input-target {
-  width: 60%;
-  margin-right: 12px;
-}
-
-.btn-query {
-  width: 38%;
-}
-
 .result-section {
-  margin-top: 8px;
+  margin-top: 12px;
+  padding: 12px;
+  background: #f5f7fa;
+  border-radius: 6px;
 }
 
 .path-value {
@@ -669,6 +729,7 @@ onMounted(() => {
   height: 640px;
   background: radial-gradient(circle at top, #ffffff 0%, #f7faff 100%);
   transition: all 0.3s ease;
+  flex: 1;
 }
 
 /* 确保树状图占满整个容器 */
@@ -681,7 +742,7 @@ onMounted(() => {
 /* 适配16:9屏幕的响应式设计 */
 @media (min-width: 1200px) {
   .app-container {
-    max-width: 1600px;
+    max-width: 1800px;
   }
   
   .main-content {
@@ -689,7 +750,7 @@ onMounted(() => {
   }
   
   .tree-graph-container {
-    height: 720px;
+    height: 800px;
   }
 }
 
@@ -699,25 +760,26 @@ onMounted(() => {
     gap: 16px;
   }
   
-  .card.tree-card {
-    grid-column: 1 / 2;
-  }
-  
-  .input-preorder,
-  .btn-build,
-  .input-target,
-  .btn-query {
+  .input-preorder {
     width: 100%;
     margin-right: 0;
     margin-bottom: 12px;
   }
   
-  .query-section {
+  .btn-build {
+    width: 100%;
+  }
+  
+  .query-controls {
     flex-direction: column;
   }
   
+  .btn-query {
+    width: 100%;
+  }
+  
   .tree-graph-container {
-    height: 450px;
+    height: 500px;
   }
 }
 </style>
