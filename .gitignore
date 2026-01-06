@@ -1,0 +1,43 @@
+# 依赖目录
+node_modules/
+
+# 构建输出
+dist/
+build/
+
+# 临时文件
+*.tmp
+*.temp
+
+# 日志文件
+*.log
+
+# IDE配置
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 环境变量
+.env
+.env.local
+.env.*.local
+
+# 测试覆盖率
+coverage/
+.nyc_output/
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
+
+# 编译文件
+*.o
+*.out
+*.exe
+*.so
+*.dylib
+
+# C语言临时文件
+*.h.gch
+*.gch

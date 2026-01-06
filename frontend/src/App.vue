@@ -30,6 +30,18 @@
           <template #header>
             <div class="card-header">
               <span>树状图展示</span>
+              <div class="zoom-controls">
+                <el-button type="default" size="small" @click="zoomOut" title="缩小">
+                  <el-icon><ZoomOut /></el-icon>
+                </el-button>
+                <el-button type="default" size="small" @click="zoomFit" title="适应屏幕">
+                  <el-icon><FullScreen /></el-icon>
+                </el-button>
+                <el-button type="default" size="small" @click="zoomIn" title="放大">
+                  <el-icon><ZoomIn /></el-icon>
+                </el-button>
+                <span class="zoom-level">{{ Math.round(zoomLevel * 100) }}%</span>
+              </div>
             </div>
           </template>
           <div class="card-body">
@@ -120,10 +132,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import { Graph } from '@antv/g6'
+import { ZoomIn, ZoomOut, FullScreen } from '@element-plus/icons-vue'
 
 const preorderInput = ref('')
 const treeBuilt = ref(false)
@@ -135,9 +148,11 @@ const levelTarget = ref('')
 const levelResult = ref('')
 const treeData = ref(null)
 const graphRef = ref(null)
+const graphInstance = ref(null)
 const highlightPath = ref([])
 const highlightNode = ref(null)
 const activeTab = ref('info')
+const zoomLevel = ref(1)
 
 // 构建树
 const buildTree = async () => {
@@ -371,6 +386,9 @@ const renderTree = () => {
   // G6 v5 需要手动调用 render() 方法
   graph.render()
   
+  // 保存graph实例引用
+  graphInstance.value = graph
+  
   console.log('Graph 渲染完成')
   console.log('容器内容:', graphRef.value.innerHTML)
   
@@ -378,6 +396,31 @@ const renderTree = () => {
   graph.fitView(8)
   
   console.log('=== renderTree 执行完成 ===')
+}
+
+// 放大
+const zoomIn = () => {
+  if (graphInstance.value) {
+    zoomLevel.value = Math.min(zoomLevel.value + 0.1, 3)
+    graphInstance.value.zoomTo(zoomLevel.value, { x: graphRef.value.offsetWidth / 2, y: graphRef.value.offsetHeight / 2 })
+  }
+}
+
+// 缩小
+const zoomOut = () => {
+  if (graphInstance.value) {
+    zoomLevel.value = Math.max(zoomLevel.value - 0.1, 0.3)
+    graphInstance.value.zoomTo(zoomLevel.value, { x: graphRef.value.offsetWidth / 2, y: graphRef.value.offsetHeight / 2 })
+  }
+}
+
+// 适应屏幕
+const zoomFit = () => {
+  if (graphInstance.value) {
+    graphInstance.value.fitView(8)
+    // 重置缩放级别
+    zoomLevel.value = 1
+  }
 }
 
 // 计算树深度
@@ -499,8 +542,20 @@ const handleResize = () => {
   }
 }
 
+// 添加容器大小变化监听
 onMounted(() => {
   window.addEventListener('resize', handleResize)
+  
+  // 监听容器大小变化
+  if (graphRef.value) {
+    const resizeObserver = new ResizeObserver(handleResize)
+    resizeObserver.observe(graphRef.value)
+    
+    // 组件卸载时停止监听
+    onBeforeUnmount(() => {
+      resizeObserver.disconnect()
+    })
+  }
 })
 </script>
 
@@ -623,6 +678,27 @@ onMounted(() => {
   border-radius: 12px 12px 0 0 !important;
 }
 
+/* 缩放控制按钮样式 */
+.zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.zoom-controls .el-button {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.zoom-level {
+  font-size: 14px;
+  font-weight: 600;
+  color: #606266;
+  min-width: 50px;
+  text-align: right;
+}
+
 .card :deep(.el-card__header) {
   background: #f4f7fb;
   border-bottom: 1px solid #e6edf5;
@@ -730,6 +806,7 @@ onMounted(() => {
   background: radial-gradient(circle at top, #ffffff 0%, #f7faff 100%);
   transition: all 0.3s ease;
   flex: 1;
+  position: relative;
 }
 
 /* 确保树状图占满整个容器 */
