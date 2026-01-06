@@ -35,7 +35,7 @@
       </el-card>
 
       <!-- 树信息 -->
-      <el-card class="card" v-if="treeBuilt">
+      <el-card class="card info-card" v-if="treeBuilt">
         <template #header>
           <div class="card-header">
             <span>树信息</span>
@@ -54,7 +54,7 @@
       </el-card>
 
       <!-- 路径查询 -->
-      <el-card class="card" v-if="treeBuilt">
+      <el-card class="card compact-card" v-if="treeBuilt">
         <template #header>
           <div class="card-header">
             <span>路径查询</span>
@@ -79,7 +79,7 @@
       </el-card>
 
       <!-- 节点高度查询 -->
-      <el-card class="card" v-if="treeBuilt">
+      <el-card class="card compact-card" v-if="treeBuilt">
         <template #header>
           <div class="card-header">
             <span>节点高度查询</span>
@@ -315,15 +315,17 @@ const renderTree = () => {
     },
     defaultNode: {
       type: 'circle',
-      size: 45,
+      size: 52,
       label: true,
       labelCfg: {
         position: 'center',
         offsetY: 0,
         style: {
           fill: '#000000',
-          fontSize: 18,
-          fontWeight: 'bold'
+          fontSize: 20,
+          fontWeight: 'bold',
+          textAlign: 'center',
+          textBaseline: 'middle'
         }
       },
       style: {
@@ -344,8 +346,8 @@ const renderTree = () => {
     layout: {
       type: 'dendrogram',
       direction: 'TB',
-      nodeSep: 40,
-      rankSep: 70
+      nodeSep: 48,
+      rankSep: 80
     },
     data: graphData
   })
@@ -359,7 +361,7 @@ const renderTree = () => {
   console.log('容器内容:', graphRef.value.innerHTML)
   
   // 自适应视图，调整缩放比例以适应容器
-  graph.fitView(20)
+  graph.fitView(8)
   
   console.log('=== renderTree 执行完成 ===')
 }
@@ -493,7 +495,7 @@ onMounted(() => {
   max-width: 1400px;
   margin: 0 auto;
   padding: 20px;
-  background-color: #f5f7fa;
+  background: linear-gradient(180deg, #f7f9fc 0%, #eef3f9 100%);
   min-height: 100vh;
 }
 
@@ -544,7 +546,8 @@ onMounted(() => {
   margin-bottom: 24px;
   border-radius: 12px !important;
   overflow: hidden;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+  box-shadow: 0 4px 18px 0 rgba(15, 30, 50, 0.08);
   transition: all 0.3s ease;
 }
 
@@ -552,7 +555,6 @@ onMounted(() => {
 .card .el-card__body {
   padding: 16px !important;
   margin: 0 !important;
-  min-height: 150px;
 }
 
 .card:hover {
@@ -566,8 +568,23 @@ onMounted(() => {
   border-radius: 12px 12px 0 0 !important;
 }
 
+.card :deep(.el-card__header) {
+  background: #f4f7fb;
+  border-bottom: 1px solid #e6edf5;
+  color: #1f2d3d;
+}
+
 .card-body {
   padding: 16px 0;
+}
+
+.info-card .el-card__body,
+.compact-card .el-card__body {
+  min-height: 120px;
+}
+
+.compact-card .card-body {
+  padding: 12px 0;
 }
 
 /* 圆角输入框 */
@@ -649,8 +666,8 @@ onMounted(() => {
 /* 树状图容器样式 - 直接显示，取消框中框 */
 .tree-graph-container {
   width: 100%;
-  height: 600px;
-  background-color: #ffffff;
+  height: 640px;
+  background: radial-gradient(circle at top, #ffffff 0%, #f7faff 100%);
   transition: all 0.3s ease;
 }
 
@@ -672,7 +689,7 @@ onMounted(() => {
   }
   
   .tree-graph-container {
-    height: 700px;
+    height: 720px;
   }
 }
 
