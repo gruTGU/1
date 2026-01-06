@@ -1,0 +1,257 @@
+diff --git a/frontend/src/App.vue b/frontend/src/App.vue
+index 1ef9bf0dbfe19f76b05f4232fca819b3cd073452..68cb3509b83b1528ccd82345122039cb3f05f94a 100644
+--- a/frontend/src/App.vue
++++ b/frontend/src/App.vue
+@@ -265,127 +265,118 @@ const parseTreeStructure = (preorder) => {
+   nextTick(() => {
+     renderTree()
+   })
+ }
+ 
+ // 渲染树
+ const renderTree = () => {
+   console.log('=== renderTree 开始执行 ===')
+   console.log('treeData.value:', treeData.value)
+   console.log('graphRef.value:', graphRef.value)
+   
+   if (!treeData.value) {
+     console.error('treeData 为空，无法渲染')
+     return
+   }
+   
+   if (!graphRef.value) {
+     console.error('graphRef 为空，DOM 元素未找到')
+     return
+   }
+   
+   console.log('开始清空容器...')
+   graphRef.value.innerHTML = ''
+   
+   const width = graphRef.value.offsetWidth || 600
+-  const height = Math.max(500, calculateTreeDepth(treeData.value) * 80)
++  const height = graphRef.value.offsetHeight || 500
+   console.log(`画布尺寸: ${width}x${height}`)
+   
+   // 转换树数据格式
+   console.log('开始转换树数据格式...')
+   const graphData = treeToGraphData(treeData.value)
+   console.log('graphData:', JSON.stringify(graphData, null, 2))
+   
+   if (!graphData) {
+     console.error('graphData 转换失败')
+     return
+   }
+   
+   // 应用样式
+   console.log('开始应用样式...')
+   applyStylesToGraphData(graphData)
+   
+   console.log('开始创建 Graph...')
+   
+-  // 直接在数据中为每个节点添加 label 字段
+-  graphData.nodes.forEach(node => {
+-    node.label = node.id;
+-  });
+-  
+   const graph = new Graph({
+     container: graphRef.value,
+     width,
+     height,
+     modes: {
+       default: ['drag-canvas', 'zoom-canvas', 'drag-node']
+     },
+     defaultNode: {
+       type: 'circle',
+       size: 45,
+       style: {
+         fill: '#E3F2FD',
+         stroke: '#1976D2',
+         lineWidth: 2,
+-        cursor: 'pointer'
+-      },
+-      // G6 v5 中 labelCfg 配置方式不同
+-      labelCfg: {
+-        text: (model) => model.label,
+-        style: {
+-          fill: '#000000',
+-          fontSize: 18,
+-          fontWeight: 'bold'
+-        }
++        cursor: 'pointer',
++        labelFill: '#1F1F1F',
++        labelFontSize: 18,
++        labelFontWeight: 600,
++        labelTextAlign: 'center',
++        labelTextBaseline: 'middle'
+       }
+     },
+     defaultEdge: {
+       type: 'cubic-vertical',
+       style: {
+         stroke: '#90A4AE',
+         lineWidth: 2,
+         endArrow: true
+       }
+     },
+     layout: {
+       type: 'dendrogram',
+       direction: 'TB',
+-      nodeSep: 15,
+-      rankSep: 40
++      nodeSep: 40,
++      rankSep: 70
+     },
+     data: graphData
+   })
+   
+   console.log('Graph 创建成功:', graph)
+   
+   // G6 v5 需要手动调用 render() 方法
+   graph.render()
+   
+   console.log('Graph 渲染完成')
+   console.log('容器内容:', graphRef.value.innerHTML)
+   
+   // 自适应视图，调整缩放比例以适应容器
+-  graph.fitView();
++  graph.fitView(20)
+   
+   console.log('=== renderTree 执行完成 ===')
+ }
+ 
+ // 计算树深度
+ const calculateTreeDepth = (node) => {
+   if (!node) return 0
+   if (!node.children || node.children.length === 0) return 1
+   return 1 + Math.max(...node.children.map(calculateTreeDepth))
+ }
+ 
+ // 转换为G6图数据格式（nodes和edges）
+ const treeToGraphData = (treeData) => {
+   if (!treeData) return { nodes: [], edges: [] }
+   
+   const nodes = []
+   const edges = []
+   
+   const convertNode = (node, parentId = null) => {
+     const nodeId = String(node.id)
+     
+     // 添加节点
+     nodes.push({
+       id: nodeId,
+       label: nodeId
+@@ -400,66 +391,83 @@ const treeToGraphData = (treeData) => {
+     }
+     
+     // 递归处理子节点
+     if (node.children && node.children.length > 0) {
+       node.children.forEach(child => {
+         convertNode(child, nodeId)
+       })
+     }
+   }
+   
+   convertNode(treeData)
+   
+   return { nodes, edges }
+ }
+ 
+ // 应用样式到 Graph 数据
+ const applyStylesToGraphData = (graphData) => {
+   if (!graphData) return
+   
+   console.log('开始应用样式到 graphData:', graphData)
+   
+   // 处理节点
+   if (graphData.nodes) {
+     graphData.nodes.forEach(node => {
+       const id = String(node.id)
++      const baseStyle = {
++        fill: '#E3F2FD',
++        stroke: '#1976D2',
++        lineWidth: 2,
++        labelText: node.label,
++        labelFill: '#1F1F1F',
++        labelFontSize: 18,
++        labelFontWeight: 600,
++        labelTextAlign: 'center',
++        labelTextBaseline: 'middle'
++      }
+       
+       // 路径高亮
+       if (highlightPath.value.includes(id)) {
+         node.style = {
++          ...baseStyle,
+           fill: '#FFD54F',
+           stroke: '#FF8F00',
+-          lineWidth: 3
++          lineWidth: 3,
++          labelFill: '#4E342E'
+         }
+       }
+       // 节点高亮
+       else if (highlightNode.value === id) {
+         node.style = {
++          ...baseStyle,
+           fill: '#EF5350',
+           stroke: '#C62828',
+-          lineWidth: 3
++          lineWidth: 3,
++          labelFill: '#FFFFFF'
+         }
++      } else {
++        node.style = baseStyle
+       }
+     })
+   }
+   
+   // 处理边（路径高亮）
+   if (graphData.edges && highlightPath.value.length > 1) {
+     graphData.edges.forEach(edge => {
+       const source = String(edge.source)
+       const target = String(edge.target)
+       
+       for (let i = 0; i < highlightPath.value.length - 1; i++) {
+         if (highlightPath.value[i] === source && highlightPath.value[i + 1] === target) {
+           edge.style = {
+             stroke: '#FF8F00',
+             lineWidth: 3
+           }
+           break
+         }
+       }
+     })
+   }
+   
+   console.log('样式应用完成:', graphData)
+ }
+ 
+@@ -570,26 +578,26 @@ onMounted(() => {
+   height: 100% !important;
+ }
+ 
+ @media (max-width: 768px) {
+   .main-content {
+     grid-template-columns: 1fr;
+   }
+   
+   .input-preorder,
+   .btn-build,
+   .input-target,
+   .btn-query {
+     width: 100%;
+     margin-right: 0;
+     margin-bottom: 10px;
+   }
+   
+   .query-section {
+     flex-direction: column;
+   }
+   
+   .tree-graph-container {
+     height: 400px;
+   }
+ }
+-</style>
+\ No newline at end of file
++</style>

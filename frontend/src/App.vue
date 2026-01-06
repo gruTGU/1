@@ -23,7 +23,7 @@
       </el-card>
 
       <!-- 树可视化 -->
-      <el-card class="card" v-if="treeBuilt">
+      <el-card class="card tree-card" v-if="treeBuilt">
         <template #header>
           <div class="card-header">
             <span>树状图展示</span>
@@ -287,7 +287,7 @@ const renderTree = () => {
   graphRef.value.innerHTML = ''
   
   const width = graphRef.value.offsetWidth || 600
-  const height = Math.max(500, calculateTreeDepth(treeData.value) * 80)
+  const height = graphRef.value.offsetHeight || 500
   console.log(`画布尺寸: ${width}x${height}`)
   
   // 转换树数据格式
@@ -306,11 +306,6 @@ const renderTree = () => {
   
   console.log('开始创建 Graph...')
   
-  // 直接在数据中为每个节点添加 label 字段
-  graphData.nodes.forEach(node => {
-    node.label = node.id;
-  });
-  
   const graph = new Graph({
     container: graphRef.value,
     width,
@@ -321,20 +316,21 @@ const renderTree = () => {
     defaultNode: {
       type: 'circle',
       size: 45,
-      style: {
-        fill: '#E3F2FD',
-        stroke: '#1976D2',
-        lineWidth: 2,
-        cursor: 'pointer'
-      },
-      // G6 v5 中 labelCfg 配置方式不同
+      label: true,
       labelCfg: {
-        text: (model) => model.label,
+        position: 'center',
+        offsetY: 0,
         style: {
           fill: '#000000',
           fontSize: 18,
           fontWeight: 'bold'
         }
+      },
+      style: {
+        fill: '#E3F2FD',
+        stroke: '#1976D2',
+        lineWidth: 2,
+        cursor: 'pointer'
       }
     },
     defaultEdge: {
@@ -348,8 +344,8 @@ const renderTree = () => {
     layout: {
       type: 'dendrogram',
       direction: 'TB',
-      nodeSep: 15,
-      rankSep: 40
+      nodeSep: 40,
+      rankSep: 70
     },
     data: graphData
   })
@@ -363,7 +359,7 @@ const renderTree = () => {
   console.log('容器内容:', graphRef.value.innerHTML)
   
   // 自适应视图，调整缩放比例以适应容器
-  graph.fitView();
+  graph.fitView(20)
   
   console.log('=== renderTree 执行完成 ===')
 }
@@ -422,22 +418,39 @@ const applyStylesToGraphData = (graphData) => {
   if (graphData.nodes) {
     graphData.nodes.forEach(node => {
       const id = String(node.id)
+      const baseStyle = {
+        fill: '#E3F2FD',
+        stroke: '#1976D2',
+        lineWidth: 2,
+        labelText: node.label,
+        labelFill: '#1F1F1F',
+        labelFontSize: 18,
+        labelFontWeight: 600,
+        labelTextAlign: 'center',
+        labelTextBaseline: 'middle'
+      }
       
       // 路径高亮
       if (highlightPath.value.includes(id)) {
         node.style = {
+          ...baseStyle,
           fill: '#FFD54F',
           stroke: '#FF8F00',
-          lineWidth: 3
+          lineWidth: 3,
+          labelFill: '#4E342E'
         }
       }
       // 节点高亮
       else if (highlightNode.value === id) {
         node.style = {
+          ...baseStyle,
           fill: '#EF5350',
           stroke: '#C62828',
-          lineWidth: 3
+          lineWidth: 3,
+          labelFill: '#FFFFFF'
         }
+      } else {
+        node.style = baseStyle
       }
     })
   }
@@ -477,40 +490,116 @@ onMounted(() => {
 
 <style scoped>
 .app-container {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 20px;
+  background-color: #f5f7fa;
+  min-height: 100vh;
 }
 
 .title {
   text-align: center;
   margin-bottom: 30px;
   color: #333;
+  font-size: 28px;
+  font-weight: 700;
 }
 
+/* 左侧：输入信息和树状图；右侧：其他功能 */
 .main-content {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 24px;
 }
 
+/* 左侧布局：输入信息 + 树状图 */
+.card:first-child {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.card.tree-card {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+/* 右侧布局：树信息 + 路径查询 + 节点高度查询 */
+.card:nth-child(3) {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.card:nth-child(4) {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.card:last-child {
+  grid-column: 2;
+  grid-row: 3;
+}
+
+/* 圆角美化的卡片 */
 .card {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  border-radius: 12px !important;
+  overflow: hidden;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+/* 调整Element Plus卡片的默认内边距，确保高度一致 */
+.card .el-card__body {
+  padding: 16px !important;
+  margin: 0 !important;
+  min-height: 150px;
+}
+
+.card:hover {
+  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.12);
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border-radius: 12px 12px 0 0 !important;
 }
 
 .card-body {
-  padding: 20px 0;
+  padding: 16px 0;
+}
+
+/* 圆角输入框 */
+.input-preorder,
+.input-target {
+  border-radius: 8px !important;
+  border: 1px solid #dcdfe6 !important;
+  transition: all 0.3s ease;
+}
+
+.input-preorder:focus,
+.input-target:focus {
+  border-color: #409eff !important;
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2) !important;
 }
 
 .input-preorder {
   width: 70%;
-  margin-right: 10px;
+  margin-right: 12px;
+}
+
+/* 圆角按钮 */
+.btn-build,
+.btn-query {
+  border-radius: 8px !important;
+  transition: all 0.3s ease;
+}
+
+.btn-build:hover,
+.btn-query:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .btn-build {
@@ -518,28 +607,29 @@ onMounted(() => {
 }
 
 .info-item {
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 
 .label {
   display: inline-block;
-  width: 80px;
+  width: 90px;
   font-weight: bold;
   color: #666;
 }
 
 .value {
   color: #333;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .query-section {
   display: flex;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 
 .input-target {
   width: 60%;
-  margin-right: 10px;
+  margin-right: 12px;
 }
 
 .btn-query {
@@ -547,32 +637,53 @@ onMounted(() => {
 }
 
 .result-section {
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .path-value {
   font-family: monospace;
+  color: #409eff;
+  font-weight: 500;
 }
 
-/* 树状图容器样式 */
+/* 树状图容器样式 - 直接显示，取消框中框 */
 .tree-graph-container {
   width: 100%;
-  height: 500px;
-  border: 1px solid #eaeaea;
-  border-radius: 4px;
-  overflow: auto;
-  background-color: #fafafa;
+  height: 600px;
+  background-color: #ffffff;
+  transition: all 0.3s ease;
 }
 
 /* 确保树状图占满整个容器 */
 .tree-graph-container canvas {
   width: 100% !important;
   height: 100% !important;
+  border-radius: 0;
+}
+
+/* 适配16:9屏幕的响应式设计 */
+@media (min-width: 1200px) {
+  .app-container {
+    max-width: 1600px;
+  }
+  
+  .main-content {
+    gap: 28px;
+  }
+  
+  .tree-graph-container {
+    height: 700px;
+  }
 }
 
 @media (max-width: 768px) {
   .main-content {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .card.tree-card {
+    grid-column: 1 / 2;
   }
   
   .input-preorder,
@@ -581,7 +692,7 @@ onMounted(() => {
   .btn-query {
     width: 100%;
     margin-right: 0;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
   }
   
   .query-section {
@@ -589,7 +700,7 @@ onMounted(() => {
   }
   
   .tree-graph-container {
-    height: 400px;
+    height: 450px;
   }
 }
 </style>
